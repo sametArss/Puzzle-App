@@ -20,6 +20,7 @@ import {
   Layers,
   ChevronRight,
   ImageIcon,
+  Settings,
 } from 'lucide-react-native';
 import { PuzzleGameState, DifficultyLevel } from '../core/types/puzzle.types';
 import { asyncStorageService } from '../services/storage/asyncStorageService';
@@ -33,12 +34,14 @@ interface HomeScreenProps {
   onStartNewGame: (imageUri: string, gridSize: DifficultyLevel) => void;
   onResumeGame: (state: PuzzleGameState) => void;
   onOpenCollection: () => void;
+  onOpenSettings: () => void;
 }
 
 export const HomeScreen: React.FC<HomeScreenProps> = ({
   onStartNewGame,
   onResumeGame,
   onOpenCollection,
+  onOpenSettings,
 }) => {
   const [activeGame, setActiveGame] = useState<PuzzleGameState | null>(null);
   const [completedCount, setCompletedCount] = useState<number>(0);
@@ -147,6 +150,20 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        {/* Sağ Üst Ayarlar Butonu */}
+        <View style={styles.topActionsRow}>
+          <TouchableOpacity
+            activeOpacity={0.7}
+            onPress={() => {
+              hapticService.tapFeedback();
+              onOpenSettings();
+            }}
+            style={styles.settingsButton}
+          >
+            <Settings size={20} color={COLORS.textSecondary} />
+          </TouchableOpacity>
+        </View>
+
         {/* 1. Üst Alan: DÖNEN PUZZLE ANİMASYONU & BAŞLIK */}
         <View style={styles.heroSection}>
           <SpinningPuzzleLogo size={105} />
@@ -286,9 +303,25 @@ const styles = StyleSheet.create({
     paddingTop: 10,
     paddingBottom: 40,
   },
+  topActionsRow: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+  },
+  settingsButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: COLORS.surface,
+    borderWidth: 1,
+    borderColor: COLORS.surfaceBorder,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   heroSection: {
     alignItems: 'center',
-    marginVertical: 14,
+    marginTop: 4,
+    marginBottom: 14,
   },
   brandTitle: {
     fontSize: 30,

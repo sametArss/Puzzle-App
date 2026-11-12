@@ -4,6 +4,7 @@ import { initializePieces } from '../utils/jigsawPathGenerator';
 import { isNearTarget } from '../utils/snapDetector';
 import { asyncStorageService } from '../../../services/storage/asyncStorageService';
 import { hapticService } from '../../../services/feedback/hapticService';
+import { soundService } from '../../../services/feedback/soundService';
 import { CompletedPuzzleItem } from '../../../core/types/collection.types';
 
 interface UsePuzzleGameProps {
@@ -103,6 +104,7 @@ export function usePuzzleGame({
 
         if (allPlaced) {
           hapticService.successFeedback();
+          soundService.playSuccess();
           const completedItem: CompletedPuzzleItem = {
             id: prev.id,
             imageUri: prev.imageUri,
@@ -117,6 +119,7 @@ export function usePuzzleGame({
           onGameCompleted?.(completedItem);
         } else {
           hapticService.snapFeedback();
+          soundService.playSnap();
         }
 
         return {
@@ -157,8 +160,9 @@ export function usePuzzleGame({
         placePiece(piece.id);
         return true;
       } else {
-        // Yanlış yere bırakıldı: HATA TİTREŞİMİ!
+        // Yanlış yere bırakıldı: HATA TİTREŞİMİ VE SESİ!
         hapticService.errorFeedback();
+        soundService.playError();
         setGameState((prev) => (prev ? { ...prev, moves: prev.moves + 1 } : null));
         return false;
       }
@@ -166,9 +170,10 @@ export function usePuzzleGame({
     [gameState, placePiece]
   );
 
-  // Yanlış yuvaya tıklandığında hata titreşimi
+  // Yanlış yuvaya tıklandığında hata titreşimi ve sesi
   const handleWrongSlotPress = useCallback(() => {
     hapticService.errorFeedback();
+    soundService.playError();
     setGameState((prev) => (prev ? { ...prev, moves: prev.moves + 1 } : null));
   }, []);
 

@@ -7,8 +7,10 @@ import {
   SafeAreaView,
   Alert,
   Animated,
+  TouchableOpacity,
+  Image,
 } from 'react-native';
-import { HelpCircle } from 'lucide-react-native';
+import { HelpCircle, Eye } from 'lucide-react-native';
 import { PuzzleGameState, PuzzlePieceModel, DifficultyLevel } from '../core/types/puzzle.types';
 import { usePuzzleGame } from '../features/puzzle/hooks/usePuzzleGame';
 import { PuzzleBoard } from '../features/puzzle/components/PuzzleBoard';
@@ -16,6 +18,8 @@ import { PieceTray } from '../features/puzzle/components/PieceTray';
 import { DragOverlayPiece, DRAG_FINGER_OFFSET_Y } from '../features/puzzle/components/DragOverlayPiece';
 import { GameHeader } from '../features/puzzle/components/GameHeader';
 import { GameSuccessModal } from '../features/puzzle/components/GameSuccessModal';
+import { ImagePreviewModal } from '../features/puzzle/components/ImagePreviewModal';
+import { hapticService } from '../services/feedback/hapticService';
 import { CompletedPuzzleItem } from '../core/types/collection.types';
 import { COLORS } from '../core/theme/colors';
 
@@ -32,6 +36,7 @@ interface GameScreenProps {
   };
   onGoHome: () => void;
   onGoCollection: () => void;
+  onOpenSettings: () => void;
 }
 
 export const GameScreen: React.FC<GameScreenProps> = ({
@@ -39,8 +44,10 @@ export const GameScreen: React.FC<GameScreenProps> = ({
   newGameParams,
   onGoHome,
   onGoCollection,
+  onOpenSettings,
 }) => {
   const [completedItem, setCompletedItem] = useState<CompletedPuzzleItem | null>(null);
+  const [isPreviewVisible, setIsPreviewVisible] = useState<boolean>(false);
 
   // Sürüklenen Parça
   const [draggingPiece, setDraggingPiece] = useState<PuzzlePieceModel | null>(null);
@@ -145,10 +152,27 @@ export const GameScreen: React.FC<GameScreenProps> = ({
         moves={gameState.moves}
         hintsRemaining={gameState.hintsRemaining}
         onUseHint={useHint}
+        onOpenSettings={onOpenSettings}
         onBack={handleBack}
       />
 
-      {/* 2. Yardım Açıklama Balonu */}
+      {/* 2. Referans Resim Önizleme Çubuğu */}
+      <View style={styles.previewRow}>
+        <TouchableOpacity
+          activeOpacity={0.8}
+          onPress={() => {
+            hapticService.tapFeedback();
+            setIsPreviewVisible(true);
+          }}
+          style={styles.previewPill}
+        >
+          <Image source={{ uri: gameState.imageUri }} style={styles.previewThumb} />
+          <Text style={styles.previewLabel}>Orijinal Resmi Gör</Text>
+          <Eye size={15} color={COLORS.primary} />
+        </TouchableOpacity>
+      </View>
+
+      {/* 3. Yardım Açıklama Balonu */}
       {hintTooltip && (
         <View style={styles.tooltipBanner}>
           <HelpCircle size={15} color="#FBBF24" style={{ marginRight: 6 }} />
@@ -190,7 +214,14 @@ export const GameScreen: React.FC<GameScreenProps> = ({
         />
       )}
 
-      {/* 6. Başarı Modalı */}
+      {/* 6. Orijinal Resim Önizleme Modalı */}
+      <ImagePreviewModal
+        visible={isPreviewVisible}
+        imageUri={gameState.imageUri}
+        onClose={() => setIsPreviewVisible(false)}
+      />
+
+      {/* 7. Başarı Modalı */}
       <GameSuccessModal
         visible={!!completedItem}
         item={completedItem}
@@ -205,6 +236,34 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.background,
+  },
+  previewRow: {
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  previewPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.surface,
+    paddingVertical: 5,
+    paddingLeft: 6,
+    paddingRight: 12,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: COLORS.surfaceBorder,
+    gap: 8,
+  },
+  previewThumb: {
+    width: 26,
+    height: 26,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.15)',
+  },
+  previewLabel: {
+    color: COLORS.text,
+    fontSize: 12,
+    fontWeight: '600',
   },
   boardContainer: {
     flex: 1,

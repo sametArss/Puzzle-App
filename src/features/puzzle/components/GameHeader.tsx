@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { ArrowLeft, Lightbulb, Clock, Move } from 'lucide-react-native';
+import { ArrowLeft, Lightbulb, Clock, Move, Settings } from 'lucide-react-native';
 import { COLORS } from '../../../core/theme/colors';
 
 interface GameHeaderProps {
@@ -8,6 +8,7 @@ interface GameHeaderProps {
   moves: number;
   hintsRemaining: number;
   onUseHint: () => void;
+  onOpenSettings: () => void;
   onBack: () => void;
 }
 
@@ -16,6 +17,7 @@ export const GameHeader: React.FC<GameHeaderProps> = ({
   moves,
   hintsRemaining,
   onUseHint,
+  onOpenSettings,
   onBack,
 }) => {
   const formatTime = (totalSeconds: number) => {
@@ -44,25 +46,35 @@ export const GameHeader: React.FC<GameHeaderProps> = ({
         </View>
       </View>
 
-      {/* Yardım / İpucu Butonu (3 Hak) */}
-      <TouchableOpacity
-        activeOpacity={0.7}
-        onPress={onUseHint}
-        disabled={hintsRemaining <= 0}
-        style={[
-          styles.hintButton,
-          hintsRemaining <= 0 && styles.hintButtonDisabled,
-        ]}
-      >
-        <Lightbulb
-          size={18}
-          color={hintsRemaining > 0 ? '#FBBF24' : COLORS.textMuted}
-          style={{ marginRight: 4 }}
-        />
-        <View style={styles.hintBadge}>
-          <Text style={styles.hintBadgeText}>{hintsRemaining}</Text>
-        </View>
-      </TouchableOpacity>
+      {/* Sağ Aksiyonlar: İpucu + Ayarlar */}
+      <View style={styles.rightActions}>
+        <TouchableOpacity
+          activeOpacity={0.7}
+          onPress={onUseHint}
+          disabled={hintsRemaining <= 0}
+          style={[
+            styles.hintButton,
+            hintsRemaining <= 0 && styles.hintButtonDisabled,
+          ]}
+        >
+          <Lightbulb
+            size={18}
+            color={hintsRemaining > 0 ? '#FBBF24' : COLORS.textMuted}
+            style={{ marginRight: 4 }}
+          />
+          <View style={styles.hintBadge}>
+            <Text style={styles.hintBadgeText}>{hintsRemaining}</Text>
+          </View>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          activeOpacity={0.7}
+          onPress={onOpenSettings}
+          style={styles.iconButton}
+        >
+          <Settings size={19} color={COLORS.textSecondary} />
+        </TouchableOpacity>
+      </View>
     </View>
   );
 };
@@ -72,42 +84,47 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
+    paddingHorizontal: 14,
     paddingVertical: 12,
     backgroundColor: COLORS.surface,
     borderBottomWidth: 1,
     borderBottomColor: COLORS.surfaceBorder,
   },
   iconButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 38,
+    height: 38,
+    borderRadius: 19,
     backgroundColor: COLORS.surfaceLight,
     justifyContent: 'center',
     alignItems: 'center',
   },
   statsContainer: {
     flexDirection: 'row',
-    gap: 8,
+    gap: 6,
   },
   statBadge: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: COLORS.surfaceLight,
-    paddingHorizontal: 10,
+    paddingHorizontal: 9,
     paddingVertical: 6,
     borderRadius: 16,
   },
   statText: {
     color: COLORS.text,
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '600',
+  },
+  rightActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
   hintButton: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: 'rgba(251, 191, 36, 0.12)',
-    paddingHorizontal: 10,
+    paddingHorizontal: 9,
     paddingVertical: 6,
     borderRadius: 16,
     borderWidth: 1,

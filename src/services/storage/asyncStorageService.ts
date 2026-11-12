@@ -1,10 +1,12 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { PuzzleGameState } from '../../core/types/puzzle.types';
 import { CompletedPuzzleItem } from '../../core/types/collection.types';
+import { AppSettings, DEFAULT_SETTINGS } from '../../core/types/settings.types';
 
 const STORAGE_KEYS = {
   ACTIVE_GAME: '@puzzle_active_game',
   COLLECTION: '@puzzle_collection',
+  SETTINGS: '@puzzle_settings',
 };
 
 export const asyncStorageService = {
@@ -67,6 +69,26 @@ export const asyncStorageService = {
       await AsyncStorage.setItem(STORAGE_KEYS.COLLECTION, JSON.stringify(updated));
     } catch (e) {
       console.error('Koleksiyondan silinirken hata:', e);
+    }
+  },
+
+  // Uygulama ayarlarını getir
+  getSettings: async (): Promise<AppSettings> => {
+    try {
+      const data = await AsyncStorage.getItem(STORAGE_KEYS.SETTINGS);
+      return data ? { ...DEFAULT_SETTINGS, ...JSON.parse(data) } : DEFAULT_SETTINGS;
+    } catch (e) {
+      console.error('Ayarlar okunurken hata:', e);
+      return DEFAULT_SETTINGS;
+    }
+  },
+
+  // Uygulama ayarlarını kaydet
+  saveSettings: async (settings: AppSettings): Promise<void> => {
+    try {
+      await AsyncStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(settings));
+    } catch (e) {
+      console.error('Ayarlar kaydedilirken hata:', e);
     }
   },
 };

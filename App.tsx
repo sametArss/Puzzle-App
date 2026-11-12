@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { HomeScreen } from './src/screens/HomeScreen';
 import { GameScreen } from './src/screens/GameScreen';
 import { CollectionScreen } from './src/screens/CollectionScreen';
 import { SplashScreen } from './src/screens/SplashScreen';
+import { SettingsModal } from './src/screens/SettingsModal';
+import { useSettings } from './src/features/settings/hooks/useSettings';
 import { DifficultyLevel, PuzzleGameState } from './src/core/types/puzzle.types';
 import { COLORS } from './src/core/theme/colors';
 
@@ -14,6 +16,9 @@ type ScreenType = 'HOME' | 'GAME' | 'COLLECTION';
 export default function App() {
   const [showSplash, setShowSplash] = useState<boolean>(true);
   const [currentScreen, setCurrentScreen] = useState<ScreenType>('HOME');
+  const [isSettingsVisible, setIsSettingsVisible] = useState<boolean>(false);
+
+  const { settings, toggleSound, toggleHaptics } = useSettings();
 
   const [newGameParams, setNewGameParams] = useState<{
     imageUri: string;
@@ -40,7 +45,7 @@ export default function App() {
     <GestureHandlerRootView style={styles.container}>
       <StatusBar style="light" />
 
-      {/* 1. Şık ve Modern Açılış Ekranı (Beyaz ekranı tamamen engeller) */}
+      {/* 1. Şık ve Modern Açılış Ekranı */}
       {showSplash && (
         <SplashScreen onFinish={() => setShowSplash(false)} />
       )}
@@ -51,6 +56,7 @@ export default function App() {
           onStartNewGame={handleStartNewGame}
           onResumeGame={handleResumeGame}
           onOpenCollection={() => setCurrentScreen('COLLECTION')}
+          onOpenSettings={() => setIsSettingsVisible(true)}
         />
       )}
 
@@ -60,12 +66,22 @@ export default function App() {
           newGameParams={newGameParams ?? undefined}
           onGoHome={() => setCurrentScreen('HOME')}
           onGoCollection={() => setCurrentScreen('COLLECTION')}
+          onOpenSettings={() => setIsSettingsVisible(true)}
         />
       )}
 
       {currentScreen === 'COLLECTION' && (
         <CollectionScreen onBack={() => setCurrentScreen('HOME')} />
       )}
+
+      {/* 3. Ayarlar Menüsü Modalı */}
+      <SettingsModal
+        visible={isSettingsVisible}
+        settings={settings}
+        onToggleSound={toggleSound}
+        onToggleHaptics={toggleHaptics}
+        onClose={() => setIsSettingsVisible(false)}
+      />
     </GestureHandlerRootView>
   );
 }
