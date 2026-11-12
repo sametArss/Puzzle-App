@@ -14,6 +14,7 @@
     },
     "ios": {
       "supportsTablet": true,
+      "bundleIdentifier": "com.samet.jigsawstudio",
       "infoPlist": {
         "NSPhotoLibraryUsageDescription": "Puzzle oluşturmak ve fotoğraflarınızı parçalamak için galeri izni gereklidir.",
         "NSCameraUsageDescription": "Anlık fotoğraf çekip puzzle yapmak için kamera izni gereklidir."

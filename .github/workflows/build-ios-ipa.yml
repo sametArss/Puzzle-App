@@ -1,0 +1,65 @@
+name: Build Unsigned iOS IPA
+
+on:
+  workflow_dispatch: # GitHub Actions sekmesinden tek tıkla manuel başlatma
+
+jobs:
+  build-ipa:
+    name: Build Unsigned IPA (macOS)
+    runs-on: macos-latest
+
+    steps:
+      - name: 1. Kodu İndir (Checkout)
+        uses: actions/checkout@v4
+
+      - name: 2. Node.js 22 Kur
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: 3. Bağımlılıkları Yükle
+        run: npm install
+
+      - name: 4. Native iOS Klasörünü Oluştur (Expo Prebuild)
+        env:
+          CI: 1
+          EXPO_NO_TELEMETRY: 1
+        run: npx expo prebuild --platform ios --clean
+
+      - name: 5. CocoaPods Bağımlılıklarını Kur
+        run: |
+          cd ios
+          pod install
+
+      - name: 6. İmzasız Release Build Al (xcodebuild)
+        run: |
+          WORKSPACE=$(ls -d ios/*.xcworkspace | head -n 1)
+          SCHEME=$(basename "$WORKSPACE" .xcworkspace)
+          echo "Building Workspace: $WORKSPACE | Scheme: $SCHEME"
+          xcodebuild \
+            -workspace "$WORKSPACE" \
+            -scheme "$SCHEME" \
+            -configuration Release \
+            -sdk iphoneos \
+            -derivedDataPath ios/build \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            DEVELOPMENT_TEAM=""
+
+      - name: 7. IPA Dosyasını Paketle
+        run: |
+          mkdir -p Payload
+          APP_PATH=$(ls -d ios/build/Build/Products/Release-iphoneos/*.app | head -n 1)
+          echo "Found App: $APP_PATH"
+          cp -r "$APP_PATH" Payload/
+          zip -r JigsawStudio-unsigned.ipa Payload
+
+      - name: 8. IPA Dosyasını İndirilebilir Olarak Yükle
+        uses: actions/upload-artifact@v4
+        with:
+          name: JigsawStudio-unsigned-ipa
+          path: JigsawStudio-unsigned.ipa
+          retention-days: 14
+
